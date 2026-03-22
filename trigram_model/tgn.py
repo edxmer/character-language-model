@@ -35,7 +35,7 @@ class Tokenizer:
 
 class TrigramNetwork:
     def __init__(self, file:str, rate=0.1):
-
+        self.file = file
         self.rate = rate        
 
         # Tokenizer:
@@ -43,13 +43,7 @@ class TrigramNetwork:
         self.k = len(self.tokenizer)
         
         # Create input-output triplets
-        tokenized = []
-        with open(file, "r", encoding="utf-8") as f:
-            for char in f.read():
-                if char == '\n':
-                    tokenized.extend(self.tokenizer.encode(['<b>', '<b>']))
-                else:
-                    tokenized.append(self.tokenizer.stoi[char])
+        tokenized = self.tokenize()
         
         x1s = tokenized[:-2]
         x2s = tokenized[1:-1]
@@ -77,6 +71,16 @@ class TrigramNetwork:
         # (n, k)   +   (1, k)  ->  (n, k)
         self.W = torch.randn((self.k, self.k), dtype=torch.float32, requires_grad=True)
         #self.B = torch.randn((1, self.k), dtype=torch.float32, requires_grad=True)
+    
+    def tokenize(self):
+        tokenized = []
+        with open(self.file, "r", encoding="utf-8") as f:
+            for char in f.read():
+                if char == '\n':
+                    tokenized.extend(self.tokenizer.encode(['<b>', '<b>']))
+                else:
+                    tokenized.append(self.tokenizer.stoi[char])
+        return tokenized
     
     def train(self):
         
