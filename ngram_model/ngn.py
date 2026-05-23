@@ -1,6 +1,10 @@
 import torch
 import torch.nn.functional as F
 
+
+# Note: not finished fully, while this works, it is pretty slow.
+
+
 class Tokenizer:
     """
     Creates a simple char-by-char tokenizer from a file input.
@@ -38,50 +42,54 @@ class NgramNetwork:
                     self.data.append(self.tokenizer.stoi[char])
         self.data = self.data[:-1]
         
-        self.num_of_classes = len(self.tokenizer)
-
+        self.token_count = len(self.tokenizer)
+        self.data_size = len(self.data)
+        
         # initializing weights:
+        self.W = torch.randn((self.token_count, self.token_count), dtype=torch.float, requires_grad=True) # shape: (token_count, token_count)
 
-        self.W = torch.randn((self.num_of_classes, self.num_of_classes), dtype=torch.float, requires_grad=True)
-
-    def train(self, chunk_size:int=5, rate:float=0.1, start:int=0, stop:int=-1):
-        stop = len(self.data) if stop==-1 else stop
-
+    def train(self, chunk_size=5, rate=0.1):
         # Forward pass 
-        neglogloss = torch.tensor(0.0)
-        k = 0.0
-        for i in range(start, stop-chunk_size):
-            for j in range(1, chunk_size):
-                inputs = self.data[i:i+j]
-                expected = self.data[i+j]
-
-                l0 = F.one_hot(torch.tensor(inputs, dtype=torch.long), num_classes=self.num_of_classes).float() # (j, num_of_classes)
-                l0_mean = l0 / l0.sum(dim=1, keepdim=True) # (j, num) / (1, sum) -> (j, num/sum)
-                l1= (l0_mean @ self.W) # (j, num_of_classes)
-                logits = l1.sum(dim=0) # (num_of_classes)
+        # 0 : 1
+        # 0 : 2
+        # 0 : datasize - chunksize
+        #  1 : datasize - chunksize + 1
+        #   ... 
+        #    chunk_size-1 : datasize - chunksize + chunksize
+        
+        
+        
+        xs = torch.zeros((self.data_size-chunk_size+1, self.token_count), dtype=torch.float32) # shape: (datasize-1)
+        
+        nlml = torch.tensor([0], dtype=torch.float)
+        k = 0
+        
+        for i in range(1, self.data_size):
+            for j in range(max(0, i-chunk_size), i):
+                params = F.one_hot(torch.tensor(self.data[j:i], dtype=torch.long), num_classes=self.token_count).float()
+                avg = params.sum(dim=0) / (i-j)
+                logits = avg @ self.W # shape: (token_count) * (token_count, token_count) = (token_count)
                 counts = logits.exp()
-                p = counts / counts.sum()
-                neglogloss -= p[expected].log()
-                k+=1
+                probabilities = counts / counts.sum()
+                nlml += -probabilities[self.data[i]].log()
+                k += 1
+                
         
-        loss = neglogloss / k
-        
-        print(loss)
+        nlml /= k
+        print(nlml)
         
         # Backward pass
         self.W.grad = None
-        loss.backward()
+        nlml.backward()
 
         with torch.no_grad():
             self.W -= self.W.grad * rate
     
     def sample(self, inputs:list[int]):
-        
-        l0 = F.one_hot(torch.tensor(inputs, dtype=torch.long), num_classes=self.num_of_classes).float() # (j, num_of_classes)
-        l0_mean = l0 / l0.sum(dim=1, keepdim=True) # (j, num) / (1, sum) -> (j, num/sum)
-        l1= (l0_mean @ self.W) # (j, num_of_classes)
-        logits = l1.sum(dim=0) # (num_of_classes)
+        params = F.one_hot(torch.tensor(inputs, dtype=torch.long), num_classes=self.token_count).float() # (len(inputs), num_of_classes)
+        avg = params.sum(dim=0) / len(inputs)
+        logits = (avg @ self.W) # (j, num_of_classes)
         counts = logits.exp()
-        p = counts / counts.sum()
+        probabilities = counts / counts.sum()
         
-        return torch.multinomial(p, 1, replacement=True).tolist()
+        return torch.multinomial(probabilities, 1, replacement=True).tolist()
