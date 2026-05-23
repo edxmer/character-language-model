@@ -55,22 +55,17 @@ class TrigramNetwork:
         x1s = torch.tensor(x1s, dtype=torch.long)
         x2s = torch.tensor(x2s, dtype=torch.long)
 
-        self.x1s = F.one_hot(x1s, num_classes=self.k).float()
-        self.x2s = F.one_hot(x2s, num_classes=self.k).float()
+        self.x1s = F.one_hot(x1s, num_classes=self.k).float() # input's first characters
+        self.x2s = F.one_hot(x2s, num_classes=self.k).float() # input's second characters
 
         self.ys = torch.tensor(ys, dtype=torch.long)
 
         # Initialize weights
-        # There will be 2 layers:
-        # 1 input layer with 
-        # * well, I will actually have 2 input layers, calculate the next layer with both,
-        #   then add them together, then add biases and do a relu
-        # 1 output layer with k neurons
 
         # (n, k)   *   (k, k)  ->  (n, k)
         # (n, k)   +   (1, k)  ->  (n, k)
+    
         self.W = torch.randn((self.k, self.k), dtype=torch.float32, requires_grad=True)
-        #self.B = torch.randn((1, self.k), dtype=torch.float32, requires_grad=True)
     
     def tokenize(self):
         tokenized = []
@@ -85,22 +80,18 @@ class TrigramNetwork:
     def train(self):
         
         # Forward pass
-        logits = (self.x1s @ self.W) + (self.x2s @ self.W)
+        logits = ((self.x1s + self.x2s)/2) @ self.W
         counts = logits.exp()
-        p = counts / counts.sum(dim=1, keepdim=True) # (n, k)
+        probabilities = counts / counts.sum(dim=1, keepdim=True) # (n, k)
         
-        l = p[torch.arange(self.n), self.ys].log().mean()
-        nlml = -l
+        nlml = -probabilities[torch.arange(self.n), self.ys].log().mean()
 
         
-        print(nlml)
-
+        print("loss:", nlml)
 
         # Backward pass
 
         self.W.grad = None
-        #self.B.grad = None
-
         nlml.backward()
 
         with torch.no_grad():
