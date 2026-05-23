@@ -8,7 +8,11 @@ Implemented a bigram (single letter -> single letter) and trigram (2 letter inpu
 * [Bigram demo (with hungarian cities)](bigram_demo_hungarian.ipynb)
 ### Trigram
 * [Trigram demo (with hungarian cities)](trigram_demo.ipynb)
+### N-gram
+* [N-gram model demo (with hungarian cities)](ngram_demo.ipynb)
 
 ## Files
-The bigram class is in `bigram_model/bgn.py`, the trigram is in `trigram_model/tgn.py`.
+The bigram class is in `bigram_model/bgn.py`, 
+the trigram is in `trigram_model/tgn.py`,
+and the n-gram class is in `ngram_model/ngn.py`
 The training data can be found in the `data/` folder.
