@@ -84,3 +84,6 @@ class BigramNetwork:
 
         out = torch.multinomial(counts_normalized, num_samples=1, replacement=True)
         return out.data
+
+if __name__ == '__init__':
+    pass
