@@ -110,3 +110,8 @@ class TrigramNetwork:
         p = counts / counts.sum()
 
         return torch.multinomial(p, num_samples=1, replacement=True)
+
+        
+
+def __init__():
+    pass
