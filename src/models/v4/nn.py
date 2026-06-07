@@ -22,3 +22,9 @@ class Linear:
     
     def paremeters(self) -> list[torch.Tensor]:
         return [self.w] + ([] if self.b is None else [self.b])
+
+class Tanh:
+    def __call__(self, x: torch.Tensor):
+        return torch.tanh(x)
+    def parameters(self) -> list[torch.Tensor]:
+        return []
