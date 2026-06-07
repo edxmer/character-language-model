@@ -2,6 +2,7 @@
 # - Linear
 # - Tanh
 # - BatchNorm1d
+# I will try to use similar namings as them.
 
 import torch
 import torch.nn.functional as F
