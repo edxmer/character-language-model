@@ -17,3 +17,5 @@
 - [3rd demo with english cities, easy hyperparameter changing and better training rate function](demos/3-ngram/n_gram_en_3.ipynb)
 - The hyperparameter testing files for these can be found in [demos/3-ngram/hyperparameter_testing](demos/3-ngram/hyperparameter_testing/)
 
+
+> I've learned many things that I've done in this repository from Andrej Karpathy's lectures on neural networks, which are available on youtube.
