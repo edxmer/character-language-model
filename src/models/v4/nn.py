@@ -21,7 +21,7 @@ class Linear:
             y += self.b
         return y
     
-    def paremeters(self) -> list[torch.Tensor]:
+    def parameters(self) -> list[torch.Tensor]:
         return [self.w] + ([] if self.b is None else [self.b])
 
 class Tanh:
@@ -38,14 +38,14 @@ class BatchNorm1d:
     '''
     def __init__(self, features: int, eps = 1e-5, momentum = 0.05):
         
-        self.gamma = torch.randn(features)
+        self.gamma = torch.ones(features)
         self.beta  = torch.zeros(features)
         
         self.eps = eps
         self.momentum = momentum
         self.training = True
         
-        self.running_mean = torch.ones(features)
+        self.running_mean = torch.zeros(features)
         self.running_var  = torch.ones(features)
         
     def __call__(self, x: torch.Tensor):
